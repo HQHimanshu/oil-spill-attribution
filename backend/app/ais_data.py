@@ -1,7 +1,9 @@
+from pathlib import Path
+
 import pandas as pd
 
 
-AIS_FILE = "../database/ais.csv"
+AIS_FILE = Path(__file__).resolve().parent.parent / "database" / "ais.csv"
 
 
 def load_ais_data():

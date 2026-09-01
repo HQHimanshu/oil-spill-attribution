@@ -1,10 +1,19 @@
+from typing import Any, Dict
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from detection import detect_oil_spill
-from vessel_matching import rank_vessels
-
-from ais_data import get_vessels_from_ais_csv, get_trajectories_from_ais_csv
+from app.detection import detect_oil_spill
+from app.vessel_matching import rank_vessels
+from app.ais_data import get_vessels_from_ais_csv, get_trajectories_from_ais_csv
+from app.investigation_service import (
+    analyze_investigation,
+    build_demo_investigation,
+    create_investigation,
+    get_investigation,
+    get_vessel_for_investigation,
+    get_vessels_for_investigation,
+)
 
 app = FastAPI(
     title="OceanGuard AI",
@@ -155,3 +164,51 @@ def dashboard():
             "Spill drift visualization"
         ]
     }
+
+
+# =========================
+# INVESTIGATION API
+# =========================
+
+@app.post("/api/investigations")
+def create_investigation_api(payload: Dict[str, Any]):
+    try:
+        return create_investigation(payload)
+    except Exception as exc:  # pragma: no cover - defensive fallback
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/investigations/{investigation_id}")
+def get_investigation_api(investigation_id: str):
+    try:
+        return get_investigation(investigation_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover - defensive fallback
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@app.post("/api/investigations/{investigation_id}/analyze")
+def analyze_investigation_api(investigation_id: str):
+    try:
+        return analyze_investigation(investigation_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover - defensive fallback
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.get("/api/investigations/{investigation_id}/vessels")
+def get_vessels_api(investigation_id: str):
+    try:
+        return get_vessels_for_investigation(investigation_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/api/investigations/{investigation_id}/vessels/{vessel_id}")
+def get_vessel_api(investigation_id: str, vessel_id: str):
+    try:
+        return get_vessel_for_investigation(investigation_id, vessel_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
