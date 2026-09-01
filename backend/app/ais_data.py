@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-AIS_FILE = "../database/ais.csv"
+AIS_FILE = "../database/synthetic_ais_with_ship_data.csv"
 
 
 def load_ais_data():
@@ -63,3 +63,5 @@ def get_trajectories_from_ais_csv():
         trajectories[str(mmsi)] = points
 
     return trajectories
+
+

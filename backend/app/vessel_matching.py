@@ -1,6 +1,5 @@
 import math
 
-
 def calculate_distance(
     lat1,
     lon1,

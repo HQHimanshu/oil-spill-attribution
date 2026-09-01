@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from get_metadata import get_metadata_for_image
 
 def detect_oil_spill(image_bytes: bytes):
 

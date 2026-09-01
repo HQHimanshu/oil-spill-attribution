@@ -1,10 +1,14 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
 
 from detection import detect_oil_spill
 from vessel_matching import rank_vessels
 
 from ais_data import get_vessels_from_ais_csv, get_trajectories_from_ais_csv
+from get_metadata import get_metadata_for_image
+
+import random
 
 app = FastAPI(
     title="OceanGuard AI",
@@ -65,6 +69,31 @@ async def detect_spill(file: UploadFile = File(...)):
             raise ValueError("Empty image file")
 
         result = detect_oil_spill(image_bytes)
+
+        image_id = Path(file.filename).stem
+
+        # Find metadata
+        metadata = get_metadata_for_image(image_id)
+
+        if metadata is None:
+
+    # Fallback coordinates
+            latitude = random.uniform(-60, 60)
+            longitude = random.uniform(-180, 180)
+
+            result["coordinate_source"] = "Random fallback"
+
+        else:
+
+            latitude = metadata["latitude"]
+            longitude = metadata["longitude"]
+
+            result["coordinate_source"] = "Image metadata"
+
+
+        result["image_id"] = image_id
+        result["latitude"] = latitude
+        result["longitude"] = longitude
 
         return result
 
