@@ -1,17 +1,41 @@
-const API_BASE = (window.__APP_API_BASE__ || 'http://127.0.0.1:8000');
+/**
+ * OceanGuard AI - Frontend API Service (Phase 31).
+ * Communicates with FastAPI backend for real SAR detection, metocean backtracking, AIS correlation,
+ * ML model evaluation metrics, and grounded RAG Investigation Copilot queries.
+ */
 
-async function requestJson(url, options = {}) {
-  const response = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options,
-  });
+const API_CANDIDATES = [
+  window.__APP_API_BASE__,
+  'http://127.0.0.1:8000',
+  'http://localhost:8000',
+  'http://127.0.0.1:8001',
+  'http://localhost:8001'
+].filter(Boolean);
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || 'Request failed');
+async function requestJson(path, options = {}) {
+  let lastError;
+
+  for (const base of API_CANDIDATES) {
+    try {
+      const requestUrl = `${base}${path.startsWith('/') ? path : `/${path}`}`;
+      const response = await fetch(requestUrl, {
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        ...options,
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        lastError = new Error(text || `HTTP ${response.status}`);
+        continue;
+      }
+
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  return response.json();
+  throw lastError || new Error('Backend API unavailable');
 }
 
 function normalizeInvestigation(raw) {
@@ -24,68 +48,75 @@ function normalizeInvestigation(raw) {
     selectedVessel: selected,
     spill: {
       ...raw?.spill,
-      centroid: raw?.spill?.centroid || { latitude: 0, longitude: 0 },
+      centroid: raw?.spill?.centroid || { latitude: 28.582, longitude: -94.925 },
+      boundary: Array.isArray(raw?.spill?.boundary) ? raw.spill.boundary : []
     },
+    origin: {
+      ...raw?.origin,
+      probableOrigin: raw?.origin?.probableOrigin || { latitude: 28.22, longitude: -95.40 },
+      route: Array.isArray(raw?.origin?.route) ? raw.origin.route : []
+    }
   };
 }
 
 window.InvestigationApi = {
   async createInvestigation(payload) {
-    try {
-      const result = await requestJson(`${API_BASE}/api/investigations`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      return normalizeInvestigation(result);
-    } catch (error) {
-      const fallback = window.InvestigationMockData?.buildMockInvestigation(payload);
-      if (fallback) return normalizeInvestigation(fallback);
-      throw error;
-    }
+    const result = await requestJson('/api/investigations', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    return normalizeInvestigation(result);
   },
 
   async getInvestigation(id) {
-    try {
-      const result = await requestJson(`${API_BASE}/api/investigations/${encodeURIComponent(id)}`);
-      return normalizeInvestigation(result);
-    } catch (error) {
-      const fallback = window.InvestigationMockData?.buildMockInvestigation();
-      if (fallback) return normalizeInvestigation(fallback);
-      throw error;
-    }
+    const result = await requestJson(`/api/investigations/${encodeURIComponent(id)}`);
+    return normalizeInvestigation(result);
   },
 
   async analyzeInvestigation(id) {
-    try {
-      const result = await requestJson(`${API_BASE}/api/investigations/${encodeURIComponent(id)}/analyze`, {
-        method: 'POST',
-      });
-      return normalizeInvestigation(result);
-    } catch (error) {
-      const fallback = window.InvestigationMockData?.buildMockInvestigation();
-      if (fallback) return normalizeInvestigation(fallback);
-      throw error;
-    }
+    const result = await requestJson(`/api/investigations/${encodeURIComponent(id)}/analyze`, {
+      method: 'POST',
+    });
+    return normalizeInvestigation(result);
   },
 
-  async getVessels(id) {
-    try {
-      const result = await requestJson(`${API_BASE}/api/investigations/${encodeURIComponent(id)}/vessels`);
-      return result;
-    } catch (error) {
-      const fallback = window.InvestigationMockData?.buildMockInvestigation();
-      return fallback?.vessels || [];
-    }
+  async askCopilot(id, question) {
+    return requestJson(`/api/investigations/${encodeURIComponent(id)}/ask`, {
+      method: 'POST',
+      body: JSON.stringify({ question }),
+    });
   },
 
-  async getVessel(id, vesselId) {
-    try {
-      const result = await requestJson(`${API_BASE}/api/investigations/${encodeURIComponent(id)}/vessels/${encodeURIComponent(vesselId)}`);
-      return result;
-    } catch (error) {
-      const fallback = window.InvestigationMockData?.buildMockInvestigation();
-      const vessel = (fallback?.vessels || []).find((item) => String(item.id) === String(vesselId));
-      return vessel || fallback?.selectedVessel || {};
-    }
+  async getModelMetrics() {
+    return requestJson('/api/model/metrics');
   },
+
+  async getProvenance(id) {
+    const query = id ? `?investigation_id=${encodeURIComponent(id)}` : '';
+    return requestJson(`/api/provenance${query}`);
+  },
+
+  async getSarScenes() {
+    return requestJson('/api/sar/scenes');
+  },
+
+  async detectSpill(file, latitude, longitude) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (latitude) formData.append('latitude', String(latitude));
+    if (longitude) formData.append('longitude', String(longitude));
+
+    for (const base of API_CANDIDATES) {
+      try {
+        const response = await fetch(`${base}/detect-spill`, {
+          method: 'POST',
+          body: formData
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        // try next
+      }
+    }
+    throw new Error('Image detection failed');
+  }
 };

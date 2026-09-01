@@ -1,0 +1,21 @@
+id,image,mask,latitude,longitude,acquisition_date,sensor,spill_class,coordinate_status
+oil_001,images/oil_001.png,masks/oil_001_mask.png,12.4,43.1,2026-01-01,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_002,images/oil_002.png,masks/oil_002_mask.png,25.8,55.2,2026-02-04,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_003,images/oil_003.png,masks/oil_003_mask.png,29.3,34.7,2026-03-07,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_004,images/oil_004.png,masks/oil_004_mask.png,31.2,29.9,2026-04-10,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_005,images/oil_005.png,masks/oil_005_mask.png,35.4,18.7,2026-05-13,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_006,images/oil_006.png,masks/oil_006_mask.png,36.8,23.1,2026-06-16,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_007,images/oil_007.png,masks/oil_007_mask.png,38.2,17.4,2026-07-19,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_008,images/oil_008.png,masks/oil_008_mask.png,40.1,15.8,2026-08-22,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_009,images/oil_009.png,masks/oil_009_mask.png,41.5,13.2,2026-09-25,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_010,images/oil_010.png,masks/oil_010_mask.png,33.7,32.5,2026-01-01,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_011,images/oil_011.png,masks/oil_011_mask.png,27.4,51.8,2026-02-04,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_012,images/oil_012.png,masks/oil_012_mask.png,22.1,59.4,2026-03-07,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_013,images/oil_013.png,masks/oil_013_mask.png,14.8,48.6,2026-04-10,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_014,images/oil_014.png,masks/oil_014_mask.png,7.2,45.1,2026-05-13,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_015,images/oil_015.png,masks/oil_015_mask.png,18.9,38.4,2026-06-16,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_016,images/oil_016.png,masks/oil_016_mask.png,30.8,48.7,2026-07-19,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_017,images/oil_017.png,masks/oil_017_mask.png,34.2,40.9,2026-08-22,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_018,images/oil_018.png,masks/oil_018_mask.png,39.6,9.4,2026-09-25,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_019,images/oil_019.png,masks/oil_019_mask.png,43.1,12.6,2026-01-01,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL
+oil_020,images/oil_020.png,masks/oil_020_mask.png,24.6,35.8,2026-02-04,Synthetic Sentinel-1-like SAR,oil_spill,SYNTHETIC / NOT REAL

@@ -1,0 +1,16 @@
+{
+  "wind": {
+    "speed": 12.6,
+    "direction": 121.0,
+    "unit": "knots",
+    "speed_ms": 6.48
+  },
+  "current": {
+    "speed": 0.42,
+    "direction": 72.0,
+    "unit": "m/s"
+  },
+  "timestamp": "2021-11-03T06:12:00Z",
+  "source": "ERA5 High-Resolution Reanalysis (Open-Meteo)",
+  "data_mode": "REAL DATA (Copernicus / ERA5 Reanalysis)"
+}

@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 
-
-AIS_FILE = Path(__file__).resolve().parent.parent / "database" / "ais.csv"
+BASE_DIR = Path(__file__).resolve().parent.parent
+AIS_FILE = BASE_DIR / "database" / "synthetic_ais_with_ship_data.csv"
 
 
 def load_ais_data():
@@ -65,3 +65,5 @@ def get_trajectories_from_ais_csv():
         trajectories[str(mmsi)] = points
 
     return trajectories
+
+

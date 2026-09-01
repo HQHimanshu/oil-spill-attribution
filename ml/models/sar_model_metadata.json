@@ -1,0 +1,54 @@
+{
+  "project": "OceanGuard-AI-SAR-Segmentation",
+  "model_version": "v2.1",
+  "dataset_version": "Sentinel-1 SAR Oil Spill Benchmark v1.0",
+  "training_timestamp": "2026-09-01T18:37:34.608218+00:00",
+  "model_type": "RandomForestSegmenter",
+  "parameters": {
+    "type": "RandomForestSegmenter",
+    "n_estimators": 150,
+    "max_depth": 16,
+    "min_samples_leaf": 2,
+    "class_weight": "balanced",
+    "threshold": 0.5
+  },
+  "feature_names": [
+    "raw_intensity",
+    "log_backscatter",
+    "lee_filtered",
+    "mean_3x3",
+    "mean_9x9",
+    "std_9x9_damping",
+    "mean_21x21_bg",
+    "sobel_gradient",
+    "dark_contrast",
+    "laplacian_blob"
+  ],
+  "feature_importances": {
+    "raw_intensity": 0.0569,
+    "log_backscatter": 0.0453,
+    "lee_filtered": 0.2906,
+    "mean_3x3": 0.2433,
+    "mean_9x9": 0.193,
+    "std_9x9_damping": 0.0548,
+    "mean_21x21_bg": 0.0972,
+    "sobel_gradient": 0.0111,
+    "dark_contrast": 0.0061,
+    "laplacian_blob": 0.0016
+  },
+  "training_samples": 105000,
+  "train_pixel_accuracy": 0.9997,
+  "val_pixel_accuracy": 0.9986,
+  "split_counts": {
+    "train_scenes": 7,
+    "val_scenes": 1,
+    "test_scenes": 2
+  },
+  "metrics": {
+    "test_iou": 0.9865,
+    "test_dice": 0.9932,
+    "test_precision": 0.9882,
+    "test_recall": 0.9983,
+    "test_f1": 0.9932
+  }
+}
