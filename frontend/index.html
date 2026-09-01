@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+>
+
+<title>OceanGuard AI</title>
+
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #071923;
+    color: white;
+    min-height: 100vh;
+}
+
+header {
+    padding: 25px 8%;
+    border-bottom: 1px solid #1d3945;
+}
+
+header h1 {
+    color: #31d7ff;
+    font-size: 32px;
+}
+
+header p {
+    color: #9bb8c2;
+    margin-top: 6px;
+}
+
+.container {
+    width: 84%;
+    max-width: 1200px;
+    margin: 40px auto;
+}
+
+.upload-box {
+    background: #0d2632;
+    border: 2px dashed #31d7ff;
+    border-radius: 15px;
+    padding: 45px;
+    text-align: center;
+}
+
+.upload-box h2 {
+    margin-bottom: 15px;
+}
+
+input {
+    margin: 20px 0;
+}
+
+button {
+    background: #31d7ff;
+    color: #06151c;
+    border: none;
+    padding: 13px 28px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+#loading {
+    display: none;
+    margin-top: 20px;
+    color: #31d7ff;
+}
+
+.results {
+    display: none;
+    margin-top: 35px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin: 20px 0;
+}
+
+.card {
+    background: #0d2632;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #1d3945;
+}
+
+.card h3 {
+    color: #9bb8c2;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.value {
+    font-size: 25px;
+    font-weight: bold;
+    color: #31d7ff;
+}
+
+.success {
+    color: #43e97b;
+}
+
+.danger {
+    color: #ff6464;
+}
+
+.location {
+    background: #0d2632;
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+#map {
+    height: 450px;
+    margin-top: 15px;
+    border-radius: 10px;
+}
+
+.vessels {
+    margin-top: 25px;
+}
+
+.vessel {
+    background: #0d2632;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    border-left: 4px solid #31d7ff;
+}
+
+.high {
+    color: #ff6464;
+    font-weight: bold;
+}
+
+.medium {
+    color: #ffd166;
+    font-weight: bold;
+}
+
+.low {
+    color: #43e97b;
+    font-weight: bold;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.info {
+    background: #0d2632;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.info h3 {
+    color: #9bb8c2;
+    margin-bottom: 8px;
+}
+
+.status {
+    color: #43e97b;
+    font-weight: bold;
+}
+
+.warning {
+    color: #ffd166;
+    font-weight: bold;
+}
+
+@media(max-width: 700px) {
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        width: 92%;
+    }
+
+    .vessel {
+        flex-direction: column;
+    }
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<h1>🌊 OceanGuard AI</h1>
+
+<p>
+Satellite-Based Oil Spill Detection & Vessel Correlation
+</p>
+
+</header>
+
+
+<div class="container">
+
+
+
+<!-- UPLOAD -->
+
+
+<div class="upload-box">
+
+<h2>
+Satellite Image Analysis
+</h2>
+
+<p>
+Upload a satellite/SAR image to detect possible oil spills.
+</p>
+
+
+<input
+type="file"
+id="imageInput"
+accept="image/*"
+>
+
+
+<br>
+
+
+<button onclick="analyzeImage()">
+🔍 ANALYZE SPILL
+</button>
+
+
+<div id="loading">
+⏳ Analyzing satellite image...
+</div>
+
+</div>
+
+<!-- RESULTS -->
+
+<div
+class="results"
+id="results"
+>
+
+
+<h2>
+AI Analysis Result
+</h2>
+
+
+<!-- MAIN CARDS -->
+
+<div class="cards">
+
+
+<div class="card">
+
+<h3>
+SPILL STATUS
+</h3>
+
+<div
+class="value"
+id="spillStatus"
+>
+-
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+CONFIDENCE
+</h3>
+
+<div
+class="value"
+id="confidence"
+>
+-
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+SPILL AREA
+</h3>
+
+<div
+class="value"
+id="percentage"
+>
+-
+</div>
+
+</div>
+
+
+</div>
+
+<!-- EXTRA ANALYSIS -->
+
+<div class="info-grid">
+
+
+<div class="info">
+
+<h3>
+🧠 Detection Method
+</h3>
+
+<p id="method">
+-
+</p>
+
+</div>
+
+
+<div class="info">
+
+<h3>
+📊 Detected Regions
+</h3>
+
+<p id="regions">
+-
+</p>
+
+</div>
+
+
+<div class="info">
+
+<h3>
+🛰️ Data Mode
+</h3>
+
+<p class="warning">
+Prototype / Simulated AIS
+</p>
+
+</div>
+
+
+<div class="info">
+
+<h3>
+⚙️ System Status
+</h3>
+
+<p class="status">
+Operational
+</p>
+
+</div>
+
+
+</div>
+
+<!-- LOCATION -->
+
+<div class="location">
+
+<h3>
+📍 Estimated Spill Location
+</h3>
+
+<p id="location">
+Waiting for analysis...
+</p>
+
+</div>
+
+
+
+
+<!-- MAP -->
+
+
+<div class="location">
+
+<h2>
+🗺️ Spill & Vessel Intelligence Map
+</h2>
+
+<div id="map"></div>
+
+</div>
+
+
+
+
+<!-- DRIFT -->
+
+
+<div class="info-grid">
+
+
+<div class="info">
+
+<h3>
+⬅️ Backward Drift / Possible Origin
+</h3>
+
+<p id="origin">
+Calculating...
+</p>
+
+</div>
+
+
+<div class="info">
+
+<h3>
+➡️ Forward Drift Prediction
+</h3>
+
+<p id="future">
+Calculating...
+</p>
+
+</div>
+
+
+</div>
+
+
+
+
+<!-- VESSELS -->
+
+
+<div class="vessels">
+
+<h2>
+🚢 Suspected Vessels
+</h2>
+
+<div id="vesselList"></div>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+
+<script
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+
+<script>
+
+async function analyzeImage() {
+
+
+    const fileInput =
+        document.getElementById(
+            "imageInput"
+        );
+
+
+    if (!fileInput.files.length) {
+
+        alert(
+            "Please select a satellite image first."
+        );
+
+        return;
+    }
+
+
+    const file =
+        fileInput.files[0];
+
+
+    document.getElementById(
+        "loading"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "results"
+    ).style.display = "none";
+
+
+    try {
+
+
+        // ======================================
+        // 1. DETECT SPILL
+        // ======================================
+
+        const formData =
+            new FormData();
+
+
+        formData.append(
+            "file",
+            file
+        );
+
+
+        const response =
+            await fetch(
+                "http://127.0.0.1:8000/detect-spill",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Oil spill detection failed"
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Detection:",
+            data
+        );
+
+        // 2. SHOW RESULT
+
+        const status =
+            document.getElementById(
+                "spillStatus"
+            );
+
+
+        if (data.spill_detected) {
+
+            status.innerText =
+                "DETECTED";
+
+            status.className =
+                "value success";
+
+        } else {
+
+            status.innerText =
+                "NOT DETECTED";
+
+            status.className =
+                "value danger";
+
+        }
+
+
+        document.getElementById(
+            "confidence"
+        ).innerText =
+
+            Math.round(
+                data.confidence * 100
+            ) + "%";
+
+
+        document.getElementById(
+            "percentage"
+        ).innerText =
+
+            data.spill_percentage
+            .toFixed(2)
+            + "%";
+
+
+        document.getElementById(
+            "method"
+        ).innerText =
+
+            data.detection_method;
+
+
+        document.getElementById(
+            "regions"
+        ).innerText =
+
+            data.detected_regions;
+
+        // 3. DEMO SPILL LOCATION
+
+        const latitude =
+            20.45;
+
+
+        const longitude =
+            68.32;
+
+
+        document.getElementById(
+            "location"
+        ).innerText =
+
+            latitude +
+            "° N, " +
+            longitude +
+            "° E";
+
+        // 4. MAP
+
+        const map =
+            L.map(
+                "map"
+            ).setView(
+
+                [
+                    latitude,
+                    longitude
+                ],
+
+                7
+
+            );
+
+
+        L.tileLayer(
+
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+            {
+
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+
+            }
+
+        ).addTo(map);
+
+
+
+        // Spill marker
+
+        L.marker(
+
+            [
+                latitude,
+                longitude
+            ]
+
+        )
+
+        .addTo(map)
+
+        .bindPopup(
+            "🛢️ Possible Oil Spill"
+        )
+
+        .openPopup();
+
+
+
+        // Spill zone
+
+        L.circle(
+
+            [
+                latitude,
+                longitude
+            ],
+
+            {
+
+                radius:
+                    15000,
+
+                weight:
+                    2,
+
+                fillOpacity:
+                    0.15
+
+            }
+
+        )
+
+        .addTo(map);
+
+        // 5. BACKWARD DRIFT
+
+        const origin = [
+
+            latitude - 0.35,
+
+            longitude - 0.45
+
+        ];
+
+
+        document.getElementById(
+            "origin"
+        ).innerText =
+
+            origin[0].toFixed(2) +
+            "° N, " +
+
+            origin[1].toFixed(2) +
+            "° E";
+
+
+        L.polyline(
+
+            [
+
+                origin,
+
+                [latitude, longitude]
+
+            ],
+
+            {
+
+                weight: 4,
+
+                dashArray:
+                    "10, 10",
+
+                opacity:
+                    0.8
+
+            }
+
+        )
+
+        .addTo(map)
+
+        .bindPopup(
+            "⬅️ Estimated backward drift / possible origin"
+        );
+
+
+
+        L.marker(origin)
+
+        .addTo(map)
+
+        .bindPopup(
+            "Possible Spill Origin"
+        );
+
+
+        // 6. FORWARD DRIFT
+        const future1 = [
+
+            latitude + 0.25,
+
+            longitude + 0.30
+
+        ];
+
+
+        const future2 = [
+
+            latitude + 0.50,
+
+            longitude + 0.60
+
+        ];
+
+
+        document.getElementById(
+            "future"
+        ).innerText =
+
+            future2[0].toFixed(2) +
+            "° N, " +
+
+            future2[1].toFixed(2) +
+            "° E";
+
+
+        L.polyline(
+
+            [
+
+                [latitude, longitude],
+
+                future1,
+
+                future2
+
+            ],
+
+            {
+
+                weight: 4,
+
+                dashArray:
+                    "6, 10",
+
+                opacity:
+                    0.8
+
+            }
+
+        )
+
+        .addTo(map)
+
+        .bindPopup(
+            "➡️ Prototype forward drift prediction"
+        );
+
+        // 7. AIS VESSEL MATCHING
+
+        const vesselResponse =
+
+            await fetch(
+
+                `http://127.0.0.1:8000/match-vessels?latitude=${latitude}&longitude=${longitude}`,
+
+                {
+
+                    method:
+                        "POST"
+
+                }
+
+            );
+
+
+        if (!vesselResponse.ok) {
+
+            throw new Error(
+                "AIS vessel matching failed"
+            );
+        }
+
+
+        const vesselData =
+            await vesselResponse.json();
+
+
+        console.log(
+            "AIS:",
+            vesselData
+        );
+
+
+        const vesselList =
+            document.getElementById(
+                "vesselList"
+            );
+
+
+        vesselList.innerHTML = "";
+
+        // 8. VESSEL MARKERS
+
+        vesselData
+        .suspected_vessels
+        .forEach(
+
+            (vessel) => {
+
+
+                const coordinates = [
+
+                    vessel.latitude,
+
+                    vessel.longitude
+
+                ];
+
+
+                // Vessel marker
+
+                L.marker(
+                    coordinates
+                )
+
+                .addTo(map)
+
+                .bindPopup(`
+
+                    🚢 <b>
+                    ${vessel.name}
+                    </b>
+
+                    <br>
+
+                    MMSI:
+                    ${vessel.mmsi}
+
+                    <br>
+
+                    Distance:
+                    ${vessel.distance_km}
+                    km
+
+                    <br>
+
+                    Correlation:
+                    ${vessel.correlation_score}%
+
+                    <br>
+
+                    Risk:
+                    ${vessel.risk_level}
+
+                `);
+
+
+
+                // Spill-to-vessel line
+
+                L.polyline(
+
+                    [
+
+                        [
+                            latitude,
+                            longitude
+                        ],
+
+                        coordinates
+
+                    ],
+
+                    {
+
+                        weight:
+                            2,
+
+                        opacity:
+                            0.6
+
+                    }
+
+                ).addTo(map);
+
+            }
+
+        );
+
+        // 9. AIS TRAJECTORIES
+
+        const trajectoryResponse =
+
+            await fetch(
+
+                "http://127.0.0.1:8000/trajectories"
+
+            );
+
+
+        const trajectoryData =
+            await trajectoryResponse.json();
+
+
+        Object.keys(
+            trajectoryData.trajectories
+        ).forEach(
+
+            (mmsi) => {
+
+
+                L.polyline(
+
+                    trajectoryData
+                    .trajectories[mmsi],
+
+                    {
+
+                        weight:
+                            3,
+
+                        opacity:
+                            0.7,
+
+                        dashArray:
+                            "8,8"
+
+                    }
+
+                )
+
+                .addTo(map)
+
+                .bindPopup(
+
+                    `AIS trajectory — MMSI: ${mmsi}`
+
+                );
+
+            }
+
+        );
+
+        // 10. VESSEL CARDS
+
+        vesselData
+        .suspected_vessels
+        .forEach(
+
+            (vessel) => {
+
+
+                const score =
+                    Number(
+                        vessel.correlation_score
+                    );
+
+
+                const level =
+                    vessel.risk_level ||
+                    "LOW";
+
+
+                let cssClass =
+                    "low";
+
+
+                if (
+                    level === "HIGH"
+                ) {
+
+                    cssClass =
+                        "high";
+
+                }
+
+                else if (
+                    level === "MEDIUM"
+                ) {
+
+                    cssClass =
+                        "medium";
+
+                }
+
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                div.className =
+                    "vessel";
+
+
+                div.innerHTML = `
+
+                    <div>
+
+                        <strong>
+                        🚢 ${vessel.name}
+                        </strong>
+
+                        <br>
+
+                        <small>
+                        MMSI:
+                        ${vessel.mmsi}
+                        </small>
+
+                        <br>
+
+                        <small>
+                        Position:
+                        ${vessel.latitude.toFixed(2)}
+                        ° N,
+                        ${vessel.longitude.toFixed(2)}
+                        ° E
+                        </small>
+
+                    </div>
+
+
+                    <div>
+
+                        Distance:
+                        ${vessel.distance_km}
+                        km
+
+                        <br>
+
+                        <span
+                        class="${cssClass}"
+                        >
+
+                            ${level}
+                            SUSPECT
+
+                        </span>
+
+                        <br>
+
+                        Correlation:
+                        ${score}%
+
+                    </div>
+
+                `;
+
+
+                vesselList.appendChild(
+                    div
+                );
+
+            }
+
+        );
+
+
+        // 11. SHOW RESULTS
+
+        document.getElementById(
+            "results"
+        ).style.display =
+            "block";
+
+
+        setTimeout(
+
+            () => {
+
+                map.invalidateSize();
+
+            },
+
+            300
+
+        );
+
+
+    }
+
+    catch(error) {
+
+
+        console.error(
+            error
+        );
+
+
+        alert(
+            "Error: " +
+            error.message +
+            "\n\nCheck karo ki Uvicorn running hai."
+        );
+
+    }
+
+
+    finally {
+
+        document.getElementById(
+            "loading"
+        ).style.display =
+            "none";
+
+    }
+
+}
+
+</script>
+
+
+</body>
+
+</html>
