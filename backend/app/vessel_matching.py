@@ -78,8 +78,8 @@ def rank_vessels(
             spill_latitude,
             spill_longitude,
 
-            vessel["lat"],
-            vessel["lon"]
+            vessel["LAT"],
+            vessel["LON"]
 
         )
 
@@ -105,16 +105,16 @@ def rank_vessels(
         results.append({
 
             "mmsi":
-                vessel["mmsi"],
+                vessel["MMSI"],
 
             "name":
-                vessel["name"],
+                vessel["VesselName"],
 
             "latitude":
-                vessel["lat"],
+                vessel["LAT"],
 
             "longitude":
-                vessel["lon"],
+                vessel["LON"],
 
             "distance_km":
                 round(distance, 2),

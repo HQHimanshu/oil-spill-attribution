@@ -502,7 +502,7 @@ src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 
 
 <script>
-
+let map = null;
 async function analyzeImage() {
 
 
@@ -658,8 +658,13 @@ async function analyzeImage() {
             "° E";
 
         // 4. MAP
+        if (map !== null) {
+                map.remove();
+                map = null;
+            };
 
-        const map =
+        map =
+            
             L.map(
                 "map"
             ).setView(
