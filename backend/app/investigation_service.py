@@ -7,7 +7,7 @@ from urllib.request import urlopen
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
-from app.ais_data import get_vessels_from_ais_csv
+from .ais_data import get_vessels_from_ais_csv
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
