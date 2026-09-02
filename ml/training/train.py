@@ -81,8 +81,8 @@ def train_model():
     print(f"Training Pixel Accuracy:   {train_acc * 100:.2f}%")
     print(f"Validation Pixel Accuracy: {val_acc * 100:.2f}%")
 
-    # Save model
-    joblib.dump(model, model_save_path)
+    # Save model with joblib compression (<40MB for GitHub compatibility)
+    joblib.dump(model, model_save_path, compress=5)
     print(f"\nSaved model checkpoint to: {model_save_path}")
 
     # Feature importances

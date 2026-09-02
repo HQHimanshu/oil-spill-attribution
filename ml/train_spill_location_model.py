@@ -115,7 +115,7 @@ def main() -> None:
     metrics = evaluate_model(model, X_test, y_test)
 
     MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(model, MODEL_PATH)
+    joblib.dump(model, MODEL_PATH, compress=5)
     METADATA_PATH.write_text(
         json.dumps(
             {
