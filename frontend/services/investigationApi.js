@@ -5,12 +5,7 @@
  */
 
 const API_CANDIDATES = [
-  window.__APP_API_BASE__,
-  window.location.origin,
-  'http://127.0.0.1:8000',
-  'http://localhost:8000',
-  'http://127.0.0.1:8001',
-  'http://localhost:8001'
+  'https://oceanguard-ai.onrender.com'
 ].filter(Boolean);
 
 async function requestJson(path, options = {}) {
