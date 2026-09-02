@@ -1,6 +1,9 @@
+from pathlib import Path
+
 import pandas as pd
 
-path = "../database/synthetic_oil_spill_dataset_20/metadata.csv"
+BASE_DIR = Path(__file__).resolve().parent.parent
+path = BASE_DIR / "database" / "synthetic_oil_spill_dataset_20" / "metadata.csv"
 
 def get_metadata_for_image(image_id):
     df = pd.read_csv(path)

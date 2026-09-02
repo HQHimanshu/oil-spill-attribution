@@ -1,0 +1,54 @@
+{
+  "project": "OceanGuard-AI-SAR-Segmentation",
+  "model_version": "v2.1",
+  "dataset_version": "PALSAR / SAR Satellite Benchmark v2.1 (8,070 scenes)",
+  "training_timestamp": "2026-09-02T04:20:01.132029+00:00",
+  "model_type": "RandomForestSegmenter",
+  "parameters": {
+    "type": "RandomForestSegmenter",
+    "n_estimators": 150,
+    "max_depth": 16,
+    "min_samples_leaf": 2,
+    "class_weight": "balanced",
+    "threshold": 0.5
+  },
+  "feature_names": [
+    "raw_intensity",
+    "log_backscatter",
+    "lee_filtered",
+    "mean_3x3",
+    "mean_9x9",
+    "std_9x9_damping",
+    "mean_21x21_bg",
+    "sobel_gradient",
+    "dark_contrast",
+    "laplacian_blob"
+  ],
+  "feature_importances": {
+    "raw_intensity": 0.0434,
+    "log_backscatter": 0.0391,
+    "lee_filtered": 0.1354,
+    "mean_3x3": 0.0962,
+    "mean_9x9": 0.2557,
+    "std_9x9_damping": 0.1136,
+    "mean_21x21_bg": 0.2199,
+    "sobel_gradient": 0.0306,
+    "dark_contrast": 0.0343,
+    "laplacian_blob": 0.0318
+  },
+  "training_samples": 240000,
+  "train_pixel_accuracy": 0.9097,
+  "val_pixel_accuracy": 0.7995,
+  "split_counts": {
+    "train_scenes": 6455,
+    "val_scenes": 807,
+    "test_scenes": 808
+  },
+  "metrics": {
+    "test_iou": 0.5054,
+    "test_dice": 0.6263,
+    "test_precision": 0.6393,
+    "test_recall": 0.7481,
+    "test_f1": 0.6263
+  }
+}

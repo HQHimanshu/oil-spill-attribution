@@ -1,0 +1,33 @@
+{
+  "target_columns": [
+    "spill_latitude",
+    "spill_longitude"
+  ],
+  "feature_columns": [
+    "LAT",
+    "LON",
+    "SOG",
+    "COG",
+    "Heading",
+    "Length_m",
+    "Width_m",
+    "GrossTonnage",
+    "Deadweight_t",
+    "YearBuilt",
+    "ShipType",
+    "Flag",
+    "Status",
+    "Destination",
+    "spill_category",
+    "spill_subcategory"
+  ],
+  "data_path": "C:\\Users\\Ashutosh Pandey\\Downloads\\oil-spill-attribution\\backend\\database\\synthetic_ais_with_ship_data.csv",
+  "model_path": "C:\\Users\\Ashutosh Pandey\\Downloads\\oil-spill-attribution\\ml\\models\\spill_location_model.joblib",
+  "metrics": {
+    "mae_latitude": 0.002466,
+    "mae_longitude": 0.005219,
+    "r2_latitude": 1.0,
+    "r2_longitude": 0.999999,
+    "mean_absolute_error_degrees": 0.003842
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "wind": {
+    "speed": 13.7,
+    "direction": 242.0,
+    "unit": "knots",
+    "speed_ms": 7.05
+  },
+  "current": {
+    "speed": 0.36,
+    "direction": 270.0,
+    "unit": "m/s"
+  },
+  "timestamp": "2022-02-08T18:20:00Z",
+  "source": "ERA5 High-Resolution Reanalysis (Open-Meteo) + CMEMS Global Ocean Physics Analysis",
+  "data_mode": "REAL DATA (Copernicus / ERA5 Reanalysis)"
+}
