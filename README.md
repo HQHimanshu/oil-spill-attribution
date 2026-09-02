@@ -199,7 +199,7 @@ Evaluated across the held-out validation and test splits of the PALSAR SAR Satel
 ---
 
 ## 👥 Contributors & Acknowledgements
-- **Team OceanGuard AI** (Smart India Hackathon SIH26143)
+- **Team SamadhanLabs** (Smart India Hackathon SIH26143)
 - Satellite Data: Japan Aerospace Exploration Agency (JAXA) PALSAR & ESA Copernicus Sentinel-1.
 - Metocean Data: European Centre for Medium-Range Weather Forecasts (ECMWF) & Copernicus Marine Environment Monitoring Service (CMEMS).
 - AIS Data: National Oceanic and Atmospheric Administration (NOAA) Office for Coastal Management.
