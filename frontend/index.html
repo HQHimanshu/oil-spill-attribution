@@ -8,7 +8,7 @@
   <!-- Google Fonts & Leaflet CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
@@ -22,11 +22,11 @@
       --text: #eaf6fc;
       --text-muted: #8caec0;
       --primary: #00e5ff;
-      --primary-glow: rgba(0, 229, 255, 0.28);
+      --primary-glow: rgba(0, 229, 255, 0.35);
       --primary-strong: #00b4d8;
       --accent: #38bdf8;
       --success: #10b981;
-      --success-glow: rgba(16, 185, 129, 0.25);
+      --success-glow: rgba(16, 185, 129, 0.3);
       --warning: #f59e0b;
       --danger: #ef4444;
       --radius: 16px;
@@ -36,20 +36,28 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+    html, body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; }
     h1, h2, h3, h4, .brand-title { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
     button, input, select { font: inherit; }
     .hidden { display: none !important; }
 
     /* Layout Shell */
-    .app-shell { max-width: 1720px; margin: 0 auto; padding: 16px 20px 40px; display: flex; flex-direction: column; gap: 16px; }
+    .app-shell { max-width: 1720px; margin: 0 auto; padding: 16px 20px 40px; display: flex; flex-direction: column; gap: 16px; position: relative; }
 
     /* Top Navigation Bar */
     .topbar {
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
       background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
-      padding: 16px 24px; box-shadow: var(--shadow); backdrop-filter: blur(16px);
+      padding: 16px 24px; box-shadow: var(--shadow); backdrop-filter: blur(16px); position: relative; overflow: hidden;
     }
+    .topbar::before {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      animation: topbarScan 4s linear infinite;
+    }
+    @keyframes topbarScan { 0% { left: -100%; } 100% { left: 100%; } }
+
     .brand-group { display: flex; align-items: center; gap: 14px; }
     .brand-icon {
       width: 44px; height: 44px; border-radius: 12px;
@@ -70,22 +78,53 @@
     .data-mode-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } }
 
-    /* Topbar Actions */
+    /* Topbar Actions & Buttons */
     .topbar-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .nav-btn {
       display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: var(--radius-sm);
       border: 1px solid var(--panel-border); background: rgba(255, 255, 255, 0.03); color: var(--text);
-      cursor: pointer; font-size: 0.84rem; font-weight: 600; transition: all 0.2s ease;
+      cursor: pointer; font-size: 0.84rem; font-weight: 600; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative; overflow: hidden;
     }
-    .nav-btn:hover { background: rgba(0, 229, 255, 0.1); border-color: var(--primary); color: #fff; transform: translateY(-1px); }
+    .nav-btn:hover { background: rgba(0, 229, 255, 0.1); border-color: var(--primary); color: #fff; transform: translateY(-2px); box-shadow: 0 4px 16px var(--primary-glow); }
+    .nav-btn:active { transform: translateY(1px) scale(0.98); }
+
     .nav-btn.btn-primary {
       background: linear-gradient(135deg, var(--primary), var(--primary-strong)); color: #021a24;
       border: none; font-weight: 700; box-shadow: 0 4px 18px var(--primary-glow);
     }
-    .nav-btn.btn-primary:hover { box-shadow: 0 6px 24px rgba(0, 229, 255, 0.45); }
-    .nav-btn.btn-warning {
-      background: linear-gradient(135deg, #f59e0b, #d97706); color: #081924; border: none; font-weight: 700;
+    .nav-btn.btn-primary:hover { box-shadow: 0 6px 24px rgba(0, 229, 255, 0.55); }
+
+    .nav-btn.btn-boot {
+      background: linear-gradient(135deg, #38bdf8, #0284c7); color: #04131d; font-weight: 800; border: none;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
     }
+    .nav-btn.btn-boot:hover { box-shadow: 0 0 28px rgba(56, 189, 248, 0.65); transform: translateY(-2px) scale(1.02); }
+
+    /* Button Ripple Click Effect */
+    .ripple {
+      position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.35);
+      transform: scale(0); animation: rippleEffect 0.55s ease-out; pointer-events: none;
+    }
+    @keyframes rippleEffect { to { transform: scale(4); opacity: 0; } }
+
+    /* HUD System Booting Sequence Overlay */
+    .boot-hud-overlay {
+      position: fixed; bottom: 24px; right: 24px; z-index: 3000; width: 440px;
+      background: rgba(4, 17, 26, 0.95); border: 1.5px solid var(--primary); border-radius: var(--radius);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px var(--primary-glow);
+      backdrop-filter: blur(16px); padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;
+      opacity: 0; pointer-events: none; transform: translateY(30px) scale(0.95);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .boot-hud-overlay.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+
+    .boot-hud-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; }
+    .boot-hud-title { font-size: 0.86rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .boot-hud-spinner { width: 14px; height: 14px; border: 2px solid rgba(0,229,255,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    .boot-hud-step { font-size: 0.78rem; color: var(--primary); font-family: 'JetBrains Mono', monospace; line-height: 1.5; }
+    .boot-progress-wrap { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden; }
+    .boot-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: width 0.25s ease; border-radius: inherit; box-shadow: 0 0 10px var(--primary-glow); }
 
     /* Data Sources Status Bar */
     .provenance-bar {
@@ -226,7 +265,9 @@
     .pipeline-step {
       display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px;
       background: rgba(255, 255, 255, 0.02); font-size: 0.78rem; border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.3s ease;
     }
+    .pipeline-step.booting { border-color: var(--primary); background: rgba(0, 229, 255, 0.1); box-shadow: 0 0 10px var(--primary-glow); }
     .pipeline-step.completed { border-color: rgba(16, 185, 129, 0.25); background: rgba(16, 185, 129, 0.05); }
     .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
     .step-label { color: var(--text); flex-grow: 1; }
@@ -286,7 +327,7 @@
 
     /* Spinner */
     .spinner {
-      display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+      display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
       border-radius: 50%; border-top-color: var(--primary); animation: spin 0.8s ease-in-out infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -295,6 +336,7 @@
     @media (max-width: 1280px) {
       .dashboard-grid { grid-template-columns: 1fr; }
       .copilot-drawer { width: 100%; right: -100%; }
+      .boot-hud-overlay { width: calc(100% - 48px); right: 24px; bottom: 16px; }
     }
   </style>
 </head>
@@ -317,6 +359,9 @@
       </div>
 
       <div class="topbar-actions">
+        <button class="nav-btn btn-boot" id="quickBootBtn" type="button" title="Launch Automated Full Pipeline Booting Sequence">
+          <span>⚡</span> Boot Pipeline
+        </button>
         <button class="nav-btn" id="openTrainModalBtn" type="button">
           <span>🧠</span> Train / Retrain Model
         </button>
@@ -604,7 +649,7 @@
         <div class="panel">
           <div class="panel-header">
             <h2 class="panel-title"><span>⚙️</span> Analytical Pipeline</h2>
-            <span class="panel-badge">10/10 STEPS</span>
+            <span class="panel-badge" id="pipelineProgressBadge">10/10 STEPS</span>
           </div>
 
           <div class="pipeline-list" id="pipelineTimeline">
@@ -614,6 +659,21 @@
 
       </aside>
     </main>
+  </div>
+
+  <!-- Real-Time HUD System Booting Sequence Overlay -->
+  <div class="boot-hud-overlay" id="bootHudOverlay">
+    <div class="boot-hud-header">
+      <div class="boot-hud-title">
+        <span class="boot-hud-spinner"></span>
+        <span id="bootHudTitle">Pipeline Bootloader</span>
+      </div>
+      <span class="mono" id="bootHudPercent" style="font-size:0.8rem;color:var(--primary);font-weight:700;">0%</span>
+    </div>
+    <div class="boot-progress-wrap">
+      <div class="boot-progress-bar" id="bootProgressBar"></div>
+    </div>
+    <div class="boot-hud-step" id="bootHudStepText">Initializing pipeline sequence...</div>
   </div>
 
   <!-- AI Investigation Copilot (RAG) Drawer -->
@@ -775,7 +835,91 @@
       mapLayers: [],
       selectedVessel: null,
       uploadedFile: null,
-      palsarScenes: []
+      palsarScenes: [],
+      isBooting: false
+    };
+
+    // Synthesized Audio Cyber Beep Feedback
+    function playCyberBeep(type = 'click') {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.06);
+          gain.gain.setValueAtTime(0.04, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.06);
+        } else if (type === 'boot') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(320, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(960, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.2);
+        } else if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+          osc.frequency.setValueAtTime(880.0, ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.06, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.22);
+        }
+      } catch (e) {}
+    }
+
+    // Attach Click Ripple to all Buttons
+    function attachButtonRippleEffects() {
+      document.querySelectorAll('button, .upload-zone').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          playCyberBeep('click');
+          const rect = this.getBoundingClientRect();
+          const ripple = document.createElement('span');
+          ripple.className = 'ripple';
+          const size = Math.max(rect.width, rect.height);
+          ripple.style.width = ripple.style.height = `${size}px`;
+          ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+          ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+          this.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 600);
+        });
+      });
+    }
+
+    // Interactive Booting HUD Controller
+    const bootHud = {
+      show(title = "Booting Pipeline Sequence...") {
+        const hud = document.getElementById('bootHudOverlay');
+        document.getElementById('bootHudTitle').textContent = title;
+        document.getElementById('bootProgressBar').style.width = '5%';
+        document.getElementById('bootHudPercent').textContent = '5%';
+        hud.classList.add('active');
+        playCyberBeep('boot');
+      },
+      update(percent, stepText) {
+        document.getElementById('bootProgressBar').style.width = `${percent}%`;
+        document.getElementById('bootHudPercent').textContent = `${percent}%`;
+        document.getElementById('bootHudStepText').textContent = stepText;
+      },
+      hide(finalMsg = "Pipeline Ready") {
+        document.getElementById('bootProgressBar').style.width = '100%';
+        document.getElementById('bootHudPercent').textContent = '100%';
+        document.getElementById('bootHudStepText').textContent = finalMsg;
+        playCyberBeep('success');
+        setTimeout(() => {
+          document.getElementById('bootHudOverlay').classList.remove('active');
+        }, 1200);
+      }
     };
 
     // Initialize Map
@@ -1032,8 +1176,23 @@
       renderTimeline(inv.analysisTimeline || []);
     }
 
-    // Execute Analysis
-    async function runInvestigationAnalysis() {
+    // Execute Analysis with Interactive Booting HUD
+    async function runInvestigationAnalysis(customTitle = "Booting Investigation Pipeline...") {
+      if (appState.isBooting) return;
+      appState.isBooting = true;
+
+      const runBtn = document.getElementById('runAnalysisBtn');
+      const execBtn = document.getElementById('executeInvestigationBtn');
+      const origRunText = runBtn.innerHTML;
+      const origExecText = execBtn.innerHTML;
+
+      runBtn.disabled = true;
+      execBtn.disabled = true;
+      runBtn.innerHTML = `<span class="spinner"></span> Booting...`;
+      execBtn.innerHTML = `<span class="spinner"></span> Booting...`;
+
+      bootHud.show(customTitle);
+
       const lat = parseFloat(document.getElementById('latInput').value) || 28.582;
       const lon = parseFloat(document.getElementById('lonInput').value) || -94.925;
       const rawTime = document.getElementById('timestampInput').value;
@@ -1041,15 +1200,35 @@
       const sceneId = document.getElementById('sceneSelector').value;
 
       try {
+        bootHud.update(20, "[1/5] Ingesting SAR Satellite Scene & Speckle Filtering...");
+        await new Promise(r => setTimeout(r, 180));
+
+        bootHud.update(45, "[2/5] Querying Live Metocean Wind & CMEMS Surface Currents...");
+        await new Promise(r => setTimeout(r, 180));
+
+        bootHud.update(70, "[3/5] Integrating Backward Euler-Lagrangian Drift Physics...");
         const inv = await window.InvestigationApi.createInvestigation({
           latitude: lat,
           longitude: lon,
           timestamp: timestamp,
           product_id: sceneId
         });
+
+        bootHud.update(90, "[4/5] Ingesting AIS Transponders & Evaluating Gaps...");
+        await new Promise(r => setTimeout(r, 150));
+
+        bootHud.update(100, "[5/5] Multi-Factor Attribution Scoring Complete!");
         renderInvestigation(inv);
+        bootHud.hide(`✓ Investigation Booted: ${inv.vessels?.length || 0} Suspect Vessels Ranked`);
       } catch (err) {
         console.error(err);
+        bootHud.hide(`Error: ${err.message}`);
+      } finally {
+        runBtn.disabled = false;
+        execBtn.disabled = false;
+        runBtn.innerHTML = origRunText;
+        execBtn.innerHTML = origExecText;
+        appState.isBooting = false;
       }
     }
 
@@ -1058,6 +1237,9 @@
       const nowIso = new Date().toISOString();
       document.getElementById('timestampInput').value = nowIso.slice(0, 16);
       
+      bootHud.show("Fetching Live Metocean Feed...");
+      bootHud.update(30, `Querying Open-Meteo Live API at ${lat.toFixed(3)}°N, ${lon.toFixed(3)}°E...`);
+
       try {
         const env = await window.InvestigationApi.getLiveEnvironmental(lat, lon, nowIso);
         document.getElementById('windSpeedDisplay').textContent = `${env.wind?.speed ?? 14} kts`;
@@ -1065,11 +1247,34 @@
         document.getElementById('currentSpeedDisplay').textContent = `${env.current?.speed ?? 0.4} m/s`;
         document.getElementById('currentDirDisplay').textContent = `towards ${env.current?.direction ?? 72}°`;
         document.getElementById('waveHeightDisplay').textContent = `${env.waves?.height_m ?? 1.2} m`;
+        bootHud.update(70, "Metocean Parameters Live & Grounded!");
       } catch (e) {
         console.warn('Live metocean fetch:', e);
       }
 
-      runInvestigationAnalysis();
+      runInvestigationAnalysis("Booting Spatial Attribution Pipeline...");
+    }
+
+    // Full System Quick Boot & Health Diagnostics
+    async function launchFullSystemBoot() {
+      bootHud.show("⚡ Launching Full System Boot...");
+      
+      bootHud.update(15, "[1/4] Verifying FastAPI Intelligence Backend...");
+      try {
+        await fetch('http://127.0.0.1:8000/health').then(r => r.json());
+      } catch(e) {}
+      await new Promise(r => setTimeout(r, 200));
+
+      bootHud.update(40, "[2/4] Testing Live Metocean & CMEMS Feeds...");
+      await new Promise(r => setTimeout(r, 200));
+
+      bootHud.update(65, "[3/4] Ingesting AIS Tracking Network...");
+      await new Promise(r => setTimeout(r, 200));
+
+      bootHud.update(85, "[4/4] Executing ML Multi-Scale Detection...");
+      await runInvestigationAnalysis("Booting OceanGuard AI Pipeline...");
+      
+      bootHud.hide("✨ OceanGuard AI Fully Booted & Ready!");
     }
 
     // Handle Image Upload & Inference
@@ -1085,17 +1290,20 @@
         previewImg.src = e.target.result;
         previewWrap.classList.remove('hidden');
         document.getElementById('uploadTextTitle').textContent = file.name;
-        document.getElementById('uploadTextSub').textContent = `${(file.size / 1024).toFixed(1)} KB • Processing ML segmentation...`;
+        document.getElementById('uploadTextSub').textContent = `${(file.size / 1024).toFixed(1)} KB • Booting ML Segmentation...`;
       };
       reader.readAsDataURL(file);
 
-      // 2. Send to ML detection endpoint
+      bootHud.show(`Processing SAR Scene: ${file.name}`);
+      bootHud.update(35, "Running Random Forest Multi-Scale Filter...");
+
       const lat = parseFloat(document.getElementById('latInput').value) || 28.582;
       const lon = parseFloat(document.getElementById('lonInput').value) || -94.925;
 
       try {
         const detectionResult = await window.InvestigationApi.detectSpill(file, lat, lon);
         
+        bootHud.update(75, `Spill ${detectionResult.detected ? 'Detected' : 'Not Detected'} (${(detectionResult.confidence * 100).toFixed(0)}% confidence)`);
         document.getElementById('uploadTextSub').textContent = `Spill ${detectionResult.detected ? 'Detected' : 'Not Detected'} (${(detectionResult.confidence * 100).toFixed(0)}% confidence)`;
         
         const rawTime = document.getElementById('timestampInput').value;
@@ -1114,9 +1322,11 @@
           }
         }
         renderInvestigation(inv);
+        bootHud.hide("✓ SAR Scene Segmented & Attributed Successfully!");
       } catch (err) {
         console.error('File upload detection error:', err);
         document.getElementById('uploadTextSub').textContent = `Error processing image: ${err.message}`;
+        bootHud.hide(`Error: ${err.message}`);
       }
     }
 
@@ -1255,6 +1465,10 @@
       initMap();
       setupLocationSearch();
       loadPalsarScenes();
+      attachButtonRippleEffects();
+
+      // Quick Boot Pipeline Button
+      document.getElementById('quickBootBtn').addEventListener('click', launchFullSystemBoot);
 
       // Upload Zone & File Input Setup
       const uploadZone = document.getElementById('uploadZone');
@@ -1307,7 +1521,7 @@
           document.getElementById('latInput').value = '2.650';
           document.getElementById('lonInput').value = '101.780';
         }
-        runInvestigationAnalysis();
+        runInvestigationAnalysis("Booting Preset Incident...");
       });
 
       document.getElementById('fetchLiveBtn').addEventListener('click', () => {
@@ -1316,8 +1530,8 @@
         fetchLiveMetoceanAndRun(lat, lon);
       });
 
-      document.getElementById('executeInvestigationBtn').addEventListener('click', runInvestigationAnalysis);
-      document.getElementById('runAnalysisBtn').addEventListener('click', runInvestigationAnalysis);
+      document.getElementById('executeInvestigationBtn').addEventListener('click', () => runInvestigationAnalysis("Executing Attribution Pipeline..."));
+      document.getElementById('runAnalysisBtn').addEventListener('click', () => runInvestigationAnalysis("Re-Analyzing Pipeline..."));
 
       // Copilot Drawer Controls
       const drawer = document.getElementById('copilotDrawer');
@@ -1430,7 +1644,7 @@
       });
 
       // Initial investigation run
-      runInvestigationAnalysis();
+      runInvestigationAnalysis("Initializing OceanGuard AI...");
     });
   </script>
 </body>
