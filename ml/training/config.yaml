@@ -1,13 +1,13 @@
 # Configuration for SAR Oil Spill Segmentation Training & Evaluation
 project_name: "OceanGuard-AI-SAR-Segmentation"
 model_version: "v2.1"
-dataset_version: "Sentinel-1 SAR Oil Spill Benchmark v1.0"
+dataset_version: "PALSAR / SAR Satellite Benchmark v2.1 (8,070 scenes)"
 
 paths:
-  data_raw_dir: "ml/data/raw"
-  images_dir: "ml/data/raw/images"
-  masks_dir: "ml/data/raw/masks"
-  metadata_path: "ml/data/raw/metadata.csv"
+  data_raw_dir: "ml/data"
+  images_dir: "images"
+  masks_dir: "masks"
+  metadata_path: "ml/data/palsar_metadata.csv"
   model_save_path: "ml/models/sar_spill_segmentation_model.joblib"
   metadata_save_path: "ml/models/sar_model_metadata.json"
   evaluation_dir: "ml/evaluation"
@@ -15,11 +15,13 @@ paths:
   qualitative_dir: "ml/evaluation/qualitative_results"
 
 dataset:
-  train_split: 0.70
-  val_split: 0.15
-  test_split: 0.15
+  train_split: 0.80
+  val_split: 0.10
+  test_split: 0.10
   random_seed: 42
-  samples_per_image: 15000
+  max_train_scenes: 60
+  max_val_scenes: 20
+  samples_per_image: 4000
   positive_ratio: 0.40
 
 model:
@@ -29,3 +31,4 @@ model:
   min_samples_leaf: 2
   class_weight: "balanced"
   threshold: 0.50
+

@@ -21,8 +21,8 @@
     "spill_category",
     "spill_subcategory"
   ],
-  "data_path": "C:\\Users\\Ashutosh Pandey\\Downloads\\oil-spill-attribution-main\\oil-spill-attribution-main\\backend\\database\\synthetic_ais_with_ship_data.csv",
-  "model_path": "C:\\Users\\Ashutosh Pandey\\Downloads\\oil-spill-attribution-main\\oil-spill-attribution-main\\ml\\models\\spill_location_model.joblib",
+  "data_path": "C:\\Users\\Ashutosh Pandey\\Downloads\\oil-spill-attribution\\backend\\database\\synthetic_ais_with_ship_data.csv",
+  "model_path": "C:\\Users\\Ashutosh Pandey\\Downloads\\oil-spill-attribution\\ml\\models\\spill_location_model.joblib",
   "metrics": {
     "mae_latitude": 0.002466,
     "mae_longitude": 0.005219,

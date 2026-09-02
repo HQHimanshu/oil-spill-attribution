@@ -2,6 +2,7 @@
 .venv/
 venv/
 env/
+ENV/
 
 # Python cache
 __pycache__/
@@ -18,22 +19,77 @@ __pycache__/
 # Environment variables / secrets
 .env
 .env.*
+!.env.example
 
 # IDE / editor files
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log
+logs/
+*.log.*
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Build / distribution
+# Build / distribution / packaging
 build/
 dist/
 *.egg-info/
+wheels/
+*.whl
+
+# Machine Learning Models & Checkpoints
+ml/models/*.joblib
+ml/models/*.pkl
+ml/models/*.pt
+ml/models/*.pth
+ml/models/*.onnx
+ml/models/*.h5
+*.joblib
+*.pkl
+*.pt
+*.pth
+*.onnx
+*.h5
+*.bin
+*.model
+
+# Large Datasets, Satellite Images & Ground Truth Masks
+images/
+masks/
+data/
+ml/data/raw/
+ml/data/processed/
+ml/data/palsar_metadata.csv
+ml/evaluation/qualitative_results/
+backend/database/environmental_cache/
+backend/database/ais.csv
+backend/database/synthetic_ais_with_ship_data.csv
+
+# Large Media & Binary Image Assets
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+*.webp
+*.gif
+*.bmp
+*.nc
+*.hdf5
+*.geotiff
+
+# Allow sample UI or repo docs icons if needed
+!docs/**/*.png
+!docs/**/*.jpg
+!docs/**/*.svg
+!frontend/assets/**/*.svg

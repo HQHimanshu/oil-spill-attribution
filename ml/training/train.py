@@ -45,19 +45,25 @@ def train_model():
 
     print(f"Train scenes: {len(dataset.train_df)} | Val scenes: {len(dataset.val_df)} | Test scenes: {len(dataset.test_df)}")
 
-    print("\nExtracting multi-scale SAR textural & backscatter features...")
+    max_train_scenes = config["dataset"].get("max_train_scenes", 60)
+    max_val_scenes = config["dataset"].get("max_val_scenes", 20)
+    samples_per_image = config["dataset"].get("samples_per_image", 4000)
+
+    print(f"\nExtracting multi-scale SAR textural & backscatter features from up to {max_train_scenes} train scenes...")
     X_train, y_train = dataset.extract_training_samples(
         split="train",
-        samples_per_image=config["dataset"]["samples_per_image"],
+        max_scenes=max_train_scenes,
+        samples_per_image=samples_per_image,
         positive_ratio=config["dataset"]["positive_ratio"],
         augment=True,
     )
-    print(f"Extracted {X_train.shape[0]} training samples across {X_train.shape[1]} feature channels.")
-    print(f"Oil spill pixel samples: {int(y_train.sum())} ({y_train.sum()/len(y_train)*100:.1f}%) | Clean sea: {int((y_train == 0).sum())}")
+    print(f"Extracted {X_train.shape[0]:,} training samples across {X_train.shape[1]} feature channels.")
+    print(f"Oil spill pixel samples: {int(y_train.sum()):,} ({y_train.sum()/len(y_train)*100:.1f}%) | Clean sea: {int((y_train == 0).sum()):,}")
 
     X_val, y_val = dataset.extract_training_samples(
         split="val",
-        samples_per_image=5000,
+        max_scenes=max_val_scenes,
+        samples_per_image=min(2000, samples_per_image),
         positive_ratio=config["dataset"]["positive_ratio"],
         augment=False,
     )

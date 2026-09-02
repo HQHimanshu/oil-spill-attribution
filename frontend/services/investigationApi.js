@@ -100,6 +100,26 @@ window.InvestigationApi = {
     return requestJson('/api/sar/scenes');
   },
 
+  async getPalsarScenes(limit = 40) {
+    return requestJson(`/api/palsar/scenes?limit=${encodeURIComponent(limit)}`);
+  },
+
+  async searchLocations(query) {
+    return requestJson(`/api/location/search?query=${encodeURIComponent(query)}`);
+  },
+
+  async getLiveEnvironmental(latitude, longitude, timestamp) {
+    const params = new URLSearchParams({ latitude, longitude });
+    if (timestamp) params.append('timestamp', timestamp);
+    return requestJson(`/api/environmental/live?${params.toString()}`);
+  },
+
+  async triggerTraining() {
+    return requestJson('/api/model/train', {
+      method: 'POST'
+    });
+  },
+
   async detectSpill(file, latitude, longitude) {
     const formData = new FormData();
     formData.append('file', file);
@@ -120,3 +140,4 @@ window.InvestigationApi = {
     throw new Error('Image detection failed');
   }
 };
+

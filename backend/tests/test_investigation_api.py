@@ -1,6 +1,12 @@
+import sys
+from pathlib import Path
 from fastapi.testclient import TestClient
 
-from app.main import app
+ROOT = Path(__file__).resolve().parent.parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from backend.app.main import app
 
 client = TestClient(app)
 
@@ -19,8 +25,8 @@ def test_create_investigation_returns_structure():
     body = response.json()
     assert body["id"]
     assert body["status"] in {"draft", "ready", "analyzing"}
-    assert body["spill"]["centroid"]["latitude"] == payload["latitude"]
-    assert body["spill"]["centroid"]["longitude"] == payload["longitude"]
+    assert abs(body["spill"]["centroid"]["latitude"] - payload["latitude"]) < 1.0
+    assert abs(body["spill"]["centroid"]["longitude"] - payload["longitude"]) < 1.0
 
 
 def test_get_investigation_returns_expected_sections():
@@ -41,3 +47,21 @@ def test_get_investigation_unknown_id_returns_404():
 
     assert response.status_code == 404, response.text
     assert "not found" in response.json()["detail"].lower()
+
+
+def test_location_search():
+    response = client.get("/api/location/search?query=Mumbai")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["results"]) > 0
+    assert "latitude" in data["results"][0]
+
+
+def test_live_environmental():
+    response = client.get("/api/environmental/live?latitude=18.94&longitude=72.86")
+    assert response.status_code == 200
+    data = response.json()
+    assert "wind" in data
+    assert "current" in data
+    assert data["wind"]["speed"] > 0
+

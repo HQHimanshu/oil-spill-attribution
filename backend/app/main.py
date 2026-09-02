@@ -73,10 +73,21 @@ def _build_full_investigation(
     if sar_image_bytes:
         sar_result = sar_engine.run_inference(sar_image_bytes, center_lat=latitude, center_lon=longitude)
     else:
-        # Check if we have a matching SAR scene in database
-        sample_img = SAR_SCENES_DIR / "S1A_IW_GRDH_1SDV_20201231T113025_GOM_GALVESTON.png"
-        if sample_img.exists():
-            sar_result = sar_engine.run_inference(str(sample_img), center_lat=latitude, center_lon=longitude)
+        # Check if product_id points to a PALSAR or Sentinel-1 scene
+        candidate_paths = []
+        if product_id:
+            clean_id = product_id.replace(".png", "")
+            candidate_paths.extend([
+                PROJECT_ROOT / "images" / "train" / f"{clean_id}.png",
+                PROJECT_ROOT / "images" / "val" / f"{clean_id}.png",
+                SAR_SCENES_DIR / f"{clean_id}.png",
+                PROJECT_ROOT / "ml" / "data" / "raw" / "images" / f"{clean_id}.png"
+            ])
+        candidate_paths.append(SAR_SCENES_DIR / "S1A_IW_GRDH_1SDV_20201231T113025_GOM_GALVESTON.png")
+        
+        found_img = next((p for p in candidate_paths if p.exists()), None)
+        if found_img:
+            sar_result = sar_engine.run_inference(str(found_img), center_lat=latitude, center_lon=longitude)
         else:
             sar_result = {
                 "detected": True,
@@ -247,11 +258,32 @@ async def detect_spill(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+MARITIME_HOTSPOTS = [
+    {"name": "Mumbai Port & Offshore High (India)", "latitude": 18.940, "longitude": 72.860, "region": "Arabian Sea", "country": "India"},
+    {"name": "Singapore Strait & Port", "latitude": 1.290, "longitude": 103.850, "region": "Strait of Singapore", "country": "Singapore"},
+    {"name": "Strait of Malacca (Port Klang)", "latitude": 2.650, "longitude": 101.780, "region": "Malacca Strait", "country": "Malaysia"},
+    {"name": "Gulf of Mexico (Galveston / Houston)", "latitude": 28.582, "longitude": -94.925, "region": "Gulf of Mexico", "country": "United States"},
+    {"name": "Strait of Hormuz (Dubai / UAE)", "latitude": 25.420, "longitude": 54.850, "region": "Persian Gulf", "country": "United Arab Emirates"},
+    {"name": "Suez Canal Approach (Port Said)", "latitude": 31.265, "longitude": 32.302, "region": "Mediterranean / Suez", "country": "Egypt"},
+    {"name": "Strait of Gibraltar", "latitude": 35.980, "longitude": -5.600, "region": "Gibraltar Strait", "country": "Spain / Morocco"},
+    {"name": "English Channel (Dover Strait)", "latitude": 51.010, "longitude": 1.450, "region": "English Channel", "country": "United Kingdom / France"},
+    {"name": "Port of Rotterdam", "latitude": 51.950, "longitude": 4.140, "region": "North Sea", "country": "Netherlands"},
+    {"name": "Central Mediterranean (Sicily Channel)", "latitude": 36.840, "longitude": 15.220, "region": "Mediterranean Sea", "country": "Italy"},
+    {"name": "Southern Red Sea (Bab-el-Mandeb)", "latitude": 12.580, "longitude": 43.340, "region": "Red Sea", "country": "Yemen / Djibouti"},
+    {"name": "Bay of Bengal (Paradip & Kolkata)", "latitude": 20.150, "longitude": 86.850, "region": "Bay of Bengal", "country": "India"},
+    {"name": "Chennai Port & Coromandel Coast", "latitude": 13.080, "longitude": 80.300, "region": "Bay of Bengal", "country": "India"},
+    {"name": "Kochi Port & Arabian Sea Corridor", "latitude": 9.960, "longitude": 76.220, "region": "Arabian Sea", "country": "India"},
+    {"name": "Port of Shanghai & Yangtze Estuary", "latitude": 31.230, "longitude": 121.500, "region": "East China Sea", "country": "China"},
+    {"name": "Tokyo Bay & Pacific Approaches", "latitude": 35.500, "longitude": 139.800, "region": "Pacific Ocean", "country": "Japan"},
+    {"name": "North Sea (Dogger Bank)", "latitude": 54.920, "longitude": 2.850, "region": "North Sea", "country": "United Kingdom"},
+]
+
+
 @app.post("/api/investigations")
 def create_investigation(payload: Dict[str, Any] = Body(...)):
     latitude = float(payload.get("latitude", 28.582))
     longitude = float(payload.get("longitude", -94.925))
-    timestamp = payload.get("timestamp") or "2020-12-31T11:30:25Z"
+    timestamp = payload.get("timestamp") or datetime.now(timezone.utc).isoformat()
     product_id = payload.get("product_id") or "S1A_IW_GRDH_1SDV_20201231T113000_20201231T113025_035928_04345F_A7B2"
     investigation_id = payload.get("id") or f"INV-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}"
 
@@ -268,8 +300,10 @@ def create_investigation(payload: Dict[str, Any] = Body(...)):
 def get_investigation(investigation_id: str):
     inv = INVESTIGATIONS.get(investigation_id)
     if not inv:
-        # Build default real historical investigation
-        inv = _build_full_investigation(28.582, -94.925, "2020-12-31T11:30:25Z", investigation_id=investigation_id)
+        if investigation_id in {"demo-investigation", "default"}:
+            inv = _build_full_investigation(28.582, -94.925, "2020-12-31T11:30:25Z", investigation_id=investigation_id)
+            return inv
+        raise HTTPException(status_code=404, detail=f"Investigation '{investigation_id}' not found")
     return inv
 
 
@@ -300,6 +334,66 @@ def ask_investigation_copilot(investigation_id: str, payload: Dict[str, Any] = B
     return response
 
 
+@app.get("/api/location/search")
+def search_locations(query: str):
+    """
+    Global location & maritime port search.
+    Searches curated maritime hotspots + Open-Meteo worldwide geocoding API.
+    """
+    q = (query or "").strip().lower()
+    if not q:
+        return {"results": MARITIME_HOTSPOTS[:8]}
+
+    # 1. Check curated hotspots
+    matches = [
+        h for h in MARITIME_HOTSPOTS
+        if q in h["name"].lower() or q in h["region"].lower() or q in h["country"].lower()
+    ]
+
+    # 2. Query Open-Meteo Geocoding API for global places
+    try:
+        import requests
+        geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={q}&count=6&language=en&format=json"
+        resp = requests.get(geo_url, timeout=3.0)
+        if resp.status_code == 200:
+            data = resp.json().get("results", [])
+            for item in data:
+                loc_name = f"{item.get('name')}, {item.get('country', '')}"
+                if not any(m["name"] == loc_name for m in matches):
+                    matches.append({
+                        "name": loc_name,
+                        "latitude": float(item["latitude"]),
+                        "longitude": float(item["longitude"]),
+                        "region": item.get("admin1", item.get("country", "Global")),
+                        "country": item.get("country", "")
+                    })
+    except Exception:
+        pass
+
+    return {"query": query, "results": matches[:10]}
+
+
+@app.get("/api/environmental/live")
+def get_live_environmental(
+    latitude: float = 28.582,
+    longitude: float = -94.925,
+    timestamp: Optional[str] = None
+):
+    """Fetches real-time / live metocean parameters for the specified coordinates."""
+    return get_environmental_data(latitude, longitude, timestamp)
+
+
+@app.post("/api/model/train")
+def trigger_model_training():
+    """Triggers ML model training pipeline on the PALSAR dataset and returns evaluation metrics."""
+    try:
+        from ml.train_all import run_full_training
+        res = run_full_training()
+        return res
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
 @app.get("/api/model/metrics")
 def get_model_metrics():
     """
@@ -314,12 +408,12 @@ def get_model_metrics():
             pass
     return {
         "model_version": "v2.1",
-        "dataset_version": "Sentinel-1 SAR Oil Spill Benchmark v1.0",
-        "test_mean_iou": 0.9865,
-        "test_mean_dice": 0.9932,
-        "test_mean_precision": 0.9882,
-        "test_mean_recall": 0.9983,
-        "test_mean_f1": 0.9932,
+        "dataset_version": "PALSAR / SAR Satellite Benchmark v2.1 (8,070 scenes)",
+        "test_mean_iou": 0.5054,
+        "test_mean_dice": 0.6263,
+        "test_mean_precision": 0.6393,
+        "test_mean_recall": 0.7481,
+        "test_mean_f1": 0.6263,
         "distinction_note": "Validation Performance reflects benchmarked accuracy against ground-truth test scenes."
     }
 
@@ -338,6 +432,24 @@ def get_sar_scenes():
         df = pd.read_csv(meta_csv)
         return df.to_dict(orient="records")
     return []
+
+
+@app.get("/api/palsar/scenes")
+def get_palsar_scenes(limit: int = 30):
+    """Returns cataloged sample scenes from the authentic PALSAR dataset."""
+    palsar_csv = PROJECT_ROOT / "ml" / "data" / "palsar_metadata.csv"
+    if palsar_csv.exists():
+        df = pd.read_csv(palsar_csv)
+        spill_sample = df[df["has_spill"]].head(limit // 2)
+        clean_sample = df[~df["has_spill"]].head(limit // 2)
+        combined = pd.concat([spill_sample, clean_sample]).to_dict(orient="records")
+        return {
+            "total_scenes": len(df),
+            "train_scenes": len(df[df["split"] == "train"]),
+            "val_scenes": len(df[df["split"] == "val"]),
+            "sample_scenes": combined
+        }
+    return {"total_scenes": 0, "sample_scenes": []}
 
 
 @app.get("/vessels")
@@ -368,12 +480,13 @@ def dashboard():
         "system_status": "Operational",
         "data_mode": "REAL DATA",
         "features": [
-            "Copernicus Sentinel-1 SAR Oil Spill Segmentation",
-            "ERA5 & Copernicus Metocean Historical Integration",
+            "Copernicus Sentinel-1 & PALSAR SAR Oil Spill Segmentation",
+            "ERA5 & Copernicus Metocean Historical & Live Integration",
             "Lagrangian Drift Backtracking Model",
-            "NOAA Historical AIS Correlation & Gap Analysis",
+            "Global Marine & NOAA Historical AIS Correlation & Gap Analysis",
             "Multi-Factor Probabilistic Attribution Scoring",
             "Grounded RAG Investigation Copilot with Citations",
             "Full Data Provenance Audit Trail"
         ]
     }
+
