@@ -16,7 +16,7 @@ import pandas as pd
 from fastapi import Body, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
 # Ensure project root is on sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -224,6 +224,11 @@ def home():
 
 @app.get("/app")
 def serve_app():
+    return RedirectResponse(url="/app/")
+
+
+@app.get("/app/")
+def serve_app_index():
     return FileResponse(str(FRONTEND_DIR / "index.html"))
 
 

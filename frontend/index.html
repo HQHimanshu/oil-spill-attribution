@@ -1261,7 +1261,8 @@
       
       bootHud.update(15, "[1/4] Verifying FastAPI Intelligence Backend...");
       try {
-        await fetch('http://127.0.0.1:8000/health').then(r => r.json());
+        const apiBase = window.__APP_API_BASE__ || window.location.origin;
+        await fetch(`${apiBase}/health`).then(r => r.json());
       } catch(e) {}
       await new Promise(r => setTimeout(r, 200));
 
