@@ -28,13 +28,7 @@
   **backward Lagrangian drift integration**:
 
 $$
-\vec{v}_{drift}
-=
-\vec{v}_{current}
-+
-0.03 \cdot
-\mathbf{R}(\theta_{Coriolis})
-\vec{v}_{wind}
+\vec{v}_{drift} = \vec{v}_{current} + 0.03 \cdot \mathbf{R}(\theta_{Coriolis})\vec{v}_{wind}
 $$
 
 - Estimates a spatial uncertainty envelope of approximately **±3.8 km** based on wind-gust variability and metocean temporal resolution.
