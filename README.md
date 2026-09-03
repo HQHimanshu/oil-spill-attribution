@@ -22,9 +22,22 @@
    - Queries **ECMWF ERA5 & Copernicus Marine (CMEMS)** high-resolution reanalysis for historical investigation dates.
 
 3. **Physics-Based Backward Lagrangian Drift Simulation**
-   - Reconstructs probable discharge origin zone $(\lambda_{orig}, \phi_{orig})$ and release time window using Euler-Lagrangian integration:
-     $$\vec{v}_{drift} = \vec{v}_{current} + 0.03 \cdot \mathbf{R}(\theta_{Coriolis}) \vec{v}_{wind}$$
-   - Calculates uncertainty dispersion envelope $(\pm 3.8\text{ km})$ based on wind gust variance and metocean temporal resolution.
+
+- Reconstructs a probable discharge origin zone
+  `(\lambda_orig, \phi_orig)` and release time window using
+  **backward Lagrangian drift integration**:
+
+$$
+\vec{v}_{drift}
+=
+\vec{v}_{current}
++
+0.03 \cdot
+\mathbf{R}(\theta_{Coriolis})
+\vec{v}_{wind}
+$$
+
+- Estimates a spatial uncertainty envelope of approximately **±3.8 km** based on wind-gust variability and metocean temporal resolution.
 
 4. **Historical AIS Correlation & Gap Analysis**
    - Matches NOAA & Global Marine AIS transponder data (IMO SOLAS Class-A) against the reconstructed origin zone.
