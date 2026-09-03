@@ -10,6 +10,14 @@
 
 ---
 
+## 🚀 Live Demo
+
+🔗 **[Try OceanGuard AI](https://oceanguard-4xa0.onrender.com/)**
+
+> The deployed application includes the interactive dashboard and maritime oil-spill investigation workflow.
+
+---
+
 ## 🌟 Key Capabilities
 
 1. **Authentic SAR Satellite Oil Spill Segmentation (8,070 PALSAR Scenes)**
